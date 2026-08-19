@@ -1,6 +1,6 @@
-# Stumble Cups · El Reto Imposible
+# World Cups · El Reto Imposible
 
-Juego web (HTML/CSS/JS puro, sin dependencias) en el que hay que sobrevivir **55 segundos** a una tormenta de proyectiles cada vez más caótica. Un solo golpe = reinicio total. Si lo completas, se desbloquea la imagen del trofeo con animación de confeti.
+Juego web (HTML/CSS/JS puro, sin dependencias) en el que hay que sobrevivir **45 segundos** a una tormenta de proyectiles cada vez más caótica. Un solo golpe = reinicio total. Si lo completas, se desbloquea la imagen del trofeo con animación de confeti.
 
 ## Estructura del proyecto
 
@@ -17,7 +17,7 @@ Todo es estático: no hay backend ni build step. Funciona directamente abriendo 
 
 1. **Crea un repositorio nuevo en GitHub**
    - Ve a github.com → botón verde "New repository".
-   - Ponle un nombre, por ejemplo `stumble-cups-reto`.
+   - Ponle un nombre, por ejemplo `world-cups-reto`.
    - Puede ser público o privado (GitHub Pages gratis requiere que sea público, salvo que tengas GitHub Pro/Team).
    - No marques "Add a README" si vas a subir el que ya tienes.
 
@@ -28,9 +28,9 @@ Todo es estático: no hay backend ni build step. Funciona directamente abriendo 
      cd worldcups
      git init
      git add .
-     git commit -m "Reto Stumble Cups"
+     git commit -m "Reto World Cups"
      git branch -M main
-     git remote add origin https://github.com/TU-USUARIO/stumble-cups-reto.git
+     git remote add origin https://github.com/TU-USUARIO/world-cups-reto.git
      git push -u origin main
      ```
 
@@ -43,7 +43,7 @@ Todo es estático: no hay backend ni build step. Funciona directamente abriendo 
 4. **Espera 1-2 minutos**
    - GitHub construye la página automáticamente. Verás un mensaje verde con la URL final, con esta forma:
      ```
-     https://TU-USUARIO.github.io/stumble-cups-reto/
+     https://TU-USUARIO.github.io/world-cups-reto/
      ```
    - Esa es tu web ya publicada, funcionando para cualquiera que entre.
 
@@ -56,21 +56,8 @@ El juego está diseñado para ser extremadamente difícil pero justo (no aleator
 - El jugador se mueve con precisión total (ratón, dedo o teclado), sin inercia rara.
 - La dificultad escala en 4 fases (lluvia de proyectiles → láseres de barrido → perseguidores → caos final con ráfagas radiales).
 - Un solo contacto reinicia el intento completo, sin checkpoints ni vidas extra.
-- 55 segundos de esquive perfecto es un listón muy alto: pensado para que, de cada ~1000 intentos, muy pocos jugadores lleguen al final. Si notas que se pasa "demasiado fácil" o "demasiado difícil" en pruebas reales, puedes ajustar `WIN_TIME` (segundos requeridos) y las fórmulas `spawnInterval` / velocidades dentro del `<script>` de `index.html`.
+- 45 segundos de esquive perfecto es un listón muy alto: pensado para que, de cada ~1000 intentos, muy pocos jugadores lleguen al final. Si notas que se pasa "demasiado fácil" o "demasiado difícil" en pruebas reales, puedes ajustar `WIN_TIME` (segundos requeridos) y las fórmulas `spawnInterval` / velocidades dentro del `<script>` de `index.html`.
 
 ## Cómo cambiar la imagen desbloqueable
 
 Sustituye `assets/trofeo.jpg` por la imagen que quieras (mismo nombre de archivo, o cambia la ruta en el `<img>` e `href` del `index.html`).
-
-
-## Trofeo fuera de GitHub
-
-El repositorio no necesita contener `assets/trofeo.jpg`.
-
-1. Sube `trofeo.jpg` a un servicio de alojamiento de imágenes que te dé una **URL directa pública** al archivo.
-2. Abre `index.html`.
-3. Busca `const TROPHY_URL = "PEGA_AQUI_LA_URL_DIRECTA_DE_TROFEO.jpg";`.
-4. Sustitúyela por la URL directa de tu imagen.
-5. Sube a GitHub únicamente `index.html` y `README.md`.
-
-Importante: esto evita que `trofeo.jpg` esté en el repositorio, pero no convierte la imagen en secreta. Como el navegador necesita descargarla después de ganar, una persona puede descubrir su URL inspeccionando la página.
