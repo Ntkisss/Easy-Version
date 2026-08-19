@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>STUMBLE CUPS · El Reto Imposible</title>
+<meta name="description" content="Sobrevive 55 segundos al caos dorado y desbloquea el trofeo. Casi nadie lo consigue.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#070503;
+    --bg-1:#100a05;
+    --gold-1:#ffd23f;
+    --gold-2:#f0a500;
+    --gold-3:#8a5a00;
+    --iron:#1b1310;
+    --iron-2:#2a1c16;
+    --danger:#c1272d;
+    --danger-glow:#ff4d4d;
+    --ink:#f4ead9;
+    --ink-dim:#b8a98d;
+    --line: rgba(240,165,0,0.18);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,210,63,0.14), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 110%, rgba(193,39,45,0.10), transparent 60%),
+      var(--bg-0);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .sparkle-field{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 10% 20%, var(--gold-2), transparent),
+      radial-gradient(1.5px 1.5px at 80% 10%, var(--gold-1), transparent),
+      radial-gradient(1px 1px at 60% 70%, var(--gold-2), transparent),
+      radial-gradient(1.5px 1.5px at 30% 85%, var(--gold-1), transparent),
+      radial-gradient(1px 1px at 90% 60%, var(--gold-2), transparent),
+      radial-gradient(1.5px 1.5px at 45% 40%, var(--gold-1), transparent);
+    background-size: 100% 100%;
+    opacity:.5;
+  }
+  .wrap{position:relative; z-index:1; max-width:900px; margin:0 auto; padding:36px 20px 80px;}
+
+  header{text-align:center; margin-bottom:8px;}
+  .eyebrow{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:12px; letter-spacing:.32em; text-transform:uppercase;
+    color:var(--gold-2); opacity:.85; margin-bottom:10px;
+  }
+  h1{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    font-size:clamp(40px, 9vw, 84px);
+    line-height:.92;
+    margin:0 0 4px;
+    letter-spacing:.01em;
+    background:linear-gradient(180deg,#fff 0%, var(--gold-1) 45%, var(--gold-3) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 8px 30px rgba(240,165,0,0.25);
+  }
+  h1 span{
+    display:block;
+    font-family:'Bebas Neue', sans-serif;
+    font-size:.42em;
+    letter-spacing:.06em;
+    color:var(--ink-dim);
+    -webkit-text-fill-color:var(--ink-dim);
+    margin-top:6px;
+  }
+  .lede{
+    max-width:560px; margin:18px auto 0; color:var(--ink-dim);
+    font-size:15.5px; line-height:1.6;
+  }
+  .lede b{color:var(--gold-1); font-weight:600;}
+
+  .stagebar{
+    display:flex; justify-content:center; gap:10px; flex-wrap:wrap;
+    margin:26px 0 18px;
+  }
+  .stat{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(255,210,63,0.05), rgba(0,0,0,0));
+    border-radius:10px;
+    padding:10px 16px;
+    min-width:108px;
+    text-align:center;
+  }
+  .stat .num{font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--gold-1); letter-spacing:.02em;}
+  .stat .lab{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-dim);}
+
+  .arena-shell{
+    position:relative;
+    border-radius:20px;
+    padding:3px;
+    background:linear-gradient(135deg, var(--gold-2), var(--iron-2) 35%, var(--iron) 60%, var(--gold-3));
+    box-shadow: 0 20px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(255,210,63,0.06);
+  }
+  .arena-inner{
+    position:relative;
+    border-radius:17px;
+    overflow:hidden;
+    background: radial-gradient(ellipse 100% 100% at 50% 0%, #171009 0%, #0a0704 60%, #050303 100%);
+  }
+  canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    touch-action:none;
+    cursor:none;
+  }
+
+  .hud{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:14px 16px;
+    pointer-events:none;
+    font-family:'Bebas Neue',sans-serif;
+    letter-spacing:.03em;
+  }
+  .hud .timer{font-size:34px; color:var(--gold-1); text-shadow:0 2px 12px rgba(0,0,0,.7);}
+  .hud .timer small{font-size:15px; color:var(--ink-dim); font-family:'Space Grotesk',sans-serif; letter-spacing:0;}
+  .hud .goal{text-align:right; font-size:13px; color:var(--ink-dim); font-family:'Space Grotesk',sans-serif;}
+  .progress-track{
+    position:absolute; left:0; right:0; bottom:0; height:5px;
+    background:rgba(255,255,255,0.06);
+  }
+  .progress-fill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg, var(--danger), var(--gold-2), var(--gold-1));
+    transition:width .08s linear;
+  }
+
+  .overlay{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; padding:24px;
+    background:rgba(5,3,2,0.86);
+    backdrop-filter:blur(2px);
+    gap:14px;
+  }
+  .overlay h2{
+    font-family:'Anton',sans-serif; font-weight:400; letter-spacing:.01em;
+    font-size:clamp(26px,6vw,42px); margin:0; color:var(--gold-1);
+  }
+  .overlay p{color:var(--ink-dim); max-width:420px; font-size:14.5px; line-height:1.55; margin:0;}
+  .overlay.danger h2{color:var(--danger-glow);}
+
+  .btn{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px; letter-spacing:.05em;
+    background:linear-gradient(180deg, var(--gold-1), var(--gold-2));
+    color:#241703;
+    border:none; border-radius:10px;
+    padding:13px 30px;
+    cursor:pointer;
+    box-shadow:0 8px 22px rgba(240,165,0,0.28), inset 0 1px 0 rgba(255,255,255,.4);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(-2px); box-shadow:0 12px 26px rgba(240,165,0,0.36);}
+  .btn:active{transform:translateY(0);}
+  .btn.ghost{
+    background:transparent; color:var(--ink-dim);
+    border:1px solid var(--line); box-shadow:none;
+  }
+
+  .controls-hint{
+    display:flex; justify-content:center; gap:22px; flex-wrap:wrap;
+    margin-top:14px; font-size:12.5px; color:var(--ink-dim);
+  }
+  .controls-hint span{display:flex; align-items:center; gap:6px;}
+  kbd{
+    font-family:'Space Grotesk',sans-serif; font-size:11px;
+    border:1px solid var(--line); border-bottom-width:2px;
+    padding:2px 6px; border-radius:5px; color:var(--gold-2);
+    background:rgba(255,210,63,0.04);
+  }
+
+  .trophy-section{
+    margin-top:56px; text-align:center;
+  }
+  .trophy-section h3{
+    font-family:'Bebas Neue',sans-serif; letter-spacing:.06em;
+    font-size:16px; text-transform:uppercase; color:var(--ink-dim);
+    margin:0 0 18px;
+  }
+  .vault{
+    position:relative;
+    width:min(360px, 82vw);
+    aspect-ratio:1/1;
+    margin:0 auto;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:linear-gradient(155deg, #14100a, #080603 60%);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);
+  }
+  .vault img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+    opacity:0; transform:scale(1.06);
+    transition:opacity 1s ease, transform 1s ease;
+  }
+  .vault.unlocked img{opacity:1; transform:scale(1);}
+  .vault .locked-ui{
+    position:relative; z-index:2;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    transition:opacity .6s ease;
+  }
+  .vault.unlocked .locked-ui{opacity:0; pointer-events:none;}
+  .lock-icon{
+    width:52px; height:52px; color:var(--gold-3);
+  }
+  .locked-ui .lab{
+    font-family:'Bebas Neue',sans-serif; letter-spacing:.08em;
+    font-size:15px; color:var(--ink-dim); text-transform:uppercase;
+  }
+  .vault-glow{
+    position:absolute; inset:-40%; z-index:1;
+    background:radial-gradient(circle, rgba(255,210,63,0.35), transparent 60%);
+    opacity:0; transition:opacity 1s ease;
+  }
+  .vault.unlocked .vault-glow{opacity:1;}
+
+  .download-row{margin-top:16px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; opacity:0; transition:opacity .6s ease; height:0; overflow:hidden;}
+  .download-row.show{opacity:1; height:auto; margin-bottom:4px;}
+
+  footer{
+    text-align:center; margin-top:60px; color:var(--ink-dim); font-size:12px; opacity:.6;
+  }
+
+  .confetti-canvas{position:fixed; inset:0; pointer-events:none; z-index:50;}
+
+  @media (max-width:520px){
+    .hud .timer{font-size:26px;}
+    .hud .goal{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+<div class="sparkle-field"></div>
+<canvas class="confetti-canvas" id="confettiCanvas"></canvas>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Stumble Cups Presenta</div>
+    <h1>EL RETO<br>IMPOSIBLE<span>55 segundos. Un solo golpe te elimina. Casi nadie llega.</span></h1>
+    <p class="lede">Controla la <b>corona dorada</b> y sobrevive a la tormenta de proyectiles del inframundo del torneo. El caos aumenta cada segundo. Un roce y vuelves a empezar desde cero. Sobrevive el tiempo completo para desbloquear el <b>trofeo oficial</b>.</p>
+  </header>
+
+  <div class="stagebar">
+    <div class="stat"><div class="num" id="statAttempts">0</div><div class="lab">Intentos</div></div>
+    <div class="stat"><div class="num" id="statBest">0.0s</div><div class="lab">Mejor tiempo</div></div>
+    <div class="stat"><div class="num" id="statPhase">—</div><div class="lab">Fase actual</div></div>
+  </div>
+
+  <div class="arena-shell">
+    <div class="arena-inner">
+      <canvas id="game" width="860" height="520"></canvas>
+      <div class="hud">
+        <div class="timer" id="timerLabel">0.0<small> / 55.0s</small></div>
+        <div class="goal" id="phaseLabel">Fase 1 · Lluvia dorada</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="overlay" id="startOverlay">
+        <h2>¿Te atreves con la corona?</h2>
+        <p>Mueve el ratón, el dedo, o usa las flechas / WASD. Esquiva todo. 55 segundos sin un solo golpe, con más caos que nunca. El 99.99% no lo logra. ¿Eres tú el que sí?</p>
+        <button class="btn" id="startBtn">Empezar reto</button>
+      </div>
+
+      <div class="overlay danger" id="deathOverlay" style="display:none;">
+        <h2 id="deathTitle">Eliminado</h2>
+        <p id="deathText">Aguantaste 0.0 segundos. La corona vuelve al pedestal. Otra vez.</p>
+        <button class="btn" id="retryBtn">Reintentar</button>
+        <button class="btn ghost" id="quitBtn">Salir</button>
+      </div>
+
+      <div class="overlay" id="winOverlay" style="display:none;">
+        <h2>TROFEO DESBLOQUEADO</h2>
+        <p>Sobreviviste los 55 segundos completos. Muy pocos lo consiguen. Baja a la bóveda para ver tu premio.</p>
+        <button class="btn" id="winCloseBtn">Ver el trofeo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-hint">
+    <span><kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd> o <kbd>WASD</kbd> mover</span>
+    <span>🖱️ arrastra el ratón / dedo</span>
+    <span>⚠️ un solo impacto = reinicio total</span>
+  </div>
+
+  <div class="trophy-section">
+    <h3>Bóveda del trofeo</h3>
+    <div class="vault" id="vault">
+      <div class="vault-glow"></div>
+      <img src="" alt="Trofeo Stumble Cups desbloqueado" id="trophyImg">
+      <div class="locked-ui">
+        <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="4" y="10.5" width="16" height="10" rx="2"/>
+          <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5"/>
+          <circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/>
+        </svg>
+        <div class="lab">Bloqueado · Completa el reto</div>
+      </div>
+    </div>
+    <div class="download-row" id="downloadRow">
+      <a class="btn" id="downloadBtn" href="#" download="stumble-cups-trofeo.jpg">Descargar imagen</a>
+      <button class="btn ghost" id="playAgainBtn">Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <footer>STUMBLE CUPS · Reto de resistencia hecho con HTML, CSS y JavaScript puro.</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /*
+   * ============================================================
+   * TROFEO EXTERNO
+   * ============================================================
+   * Pon aquí la URL pública/directa de trofeo.jpg.
+   * La imagen NO se guarda dentro del repositorio de GitHub.
+   *
+   * Ejemplo:
+   * const TROPHY_URL = "https://tu-servidor.com/trofeo.jpg";
+   */
+  const TROPHY_URL = "https://ibb.co/m528ZnXV";
+
+  const trophyImg = document.getElementById('trophyImg');
+  const downloadBtn = document.getElementById('downloadBtn');
+  if (TROPHY_URL && !TROPHY_URL.startsWith("PEGA_AQUI_")) {
+    trophyImg.src = TROPHY_URL;
+    downloadBtn.href = TROPHY_URL;
+  }
+
+  /* ---------- Config de dificultad ---------- */
+  const WIN_TIME = 55;           // segundos que hay que sobrevivir
+  const CANVAS_W = 860, CANVAS_H = 520;
+
+  /* ---------- Estado persistente ---------- */
+  const LS_BEST = 'sc_best_time';
+  const LS_ATTEMPTS = 'sc_attempts';
+  const LS_UNLOCKED = 'sc_unlocked';
+
+  const statAttempts = document.getElementById('statAttempts');
+  const statBest = document.getElementById('statBest');
+  const statPhase = document.getElementById('statPhase');
+  const timerLabel = document.getElementById('timerLabel');
+  const phaseLabel = document.getElementById('phaseLabel');
+  const progressFill = document.getElementById('progressFill');
+
+  const startOverlay = document.getElementById('startOverlay');
+  const deathOverlay = document.getElementById('deathOverlay');
+  const winOverlay = document.getElementById('winOverlay');
+  const deathTitle = document.getElementById('deathTitle');
+  const deathText = document.getElementById('deathText');
+
+  const startBtn = document.getElementById('startBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const quitBtn = document.getElementById('quitBtn');
+  const winCloseBtn = document.getElementById('winCloseBtn');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+
+  const vault = document.getElementById('vault');
+  const downloadRow = document.getElementById('downloadRow');
+
+  let attempts = parseInt(localStorage.getItem(LS_ATTEMPTS) || '0', 10);
+  let best = parseFloat(localStorage.getItem(LS_BEST) || '0');
+  let unlocked = localStorage.getItem(LS_UNLOCKED) === 'true';
+
+  function refreshStats(){
+    statAttempts.textContent = attempts;
+    statBest.textContent = best.toFixed(1) + 's';
+  }
+  refreshStats();
+  if(unlocked){
+    vault.classList.add('unlocked');
+    downloadRow.classList.add('show');
+  }
+
+  /* ---------- Canvas setup ---------- */
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  canvas.width = CANVAS_W;
+  canvas.height = CANVAS_H;
+
+  function getScale(){
+    const rect = canvas.getBoundingClientRect();
+    return { sx: CANVAS_W / rect.width, sy: CANVAS_H / rect.height, rect };
+  }
+
+  /* ---------- Jugador ---------- */
+  const player = { x: CANVAS_W/2, y: CANVAS_H - 60, r: 9, targetX: CANVAS_W/2, targetY: CANVAS_H - 60 };
+  const keys = {};
+
+  function clampPlayer(){
+    player.targetX = Math.max(player.r+2, Math.min(CANVAS_W - player.r - 2, player.targetX));
+    player.targetY = Math.max(player.r+2, Math.min(CANVAS_H - player.r - 2, player.targetY));
+  }
+
+  function pointerToCanvas(clientX, clientY){
+    const {sx, sy, rect} = getScale();
+    return { x: (clientX - rect.left) * sx, y: (clientY - rect.top) * sy };
+  }
+
+  canvas.addEventListener('mousemove', (e)=>{
+    if(!running) return;
+    const p = pointerToCanvas(e.clientX, e.clientY);
+    player.targetX = p.x; player.targetY = p.y; clampPlayer();
+  });
+  canvas.addEventListener('touchmove', (e)=>{
+    if(!running) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const p = pointerToCanvas(t.clientX, t.clientY);
+    player.targetX = p.x; player.targetY = p.y; clampPlayer();
+  }, {passive:false});
+  canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); }, {passive:false});
+
+  window.addEventListener('keydown', (e)=>{ keys[e.key.toLowerCase()] = true; });
+  window.addEventListener('keyup', (e)=>{ keys[e.key.toLowerCase()] = false; });
+
+  /* ---------- Obstáculos ---------- */
+  let obstacles = [];      // {x,y,r,vx,vy,type,hue}
+  let lasers = [];         // {y or x, warnT, active, dur, axis}
+  let elapsed = 0;
+  let lastSpawn = 0;
+  let lastLaser = 0;
+  let running = false;
+  let rafId = null;
+  let lastTs = 0;
+
+  function reset(){
+    obstacles = [];
+    lasers = [];
+    elapsed = 0;
+    lastSpawn = 0;
+    lastLaser = -3;
+    player.x = player.targetX = CANVAS_W/2;
+    player.y = player.targetY = CANVAS_H - 60;
+  }
+
+  function currentPhase(){
+    if(elapsed < 9) return 1;
+    if(elapsed < 18) return 2;
+    if(elapsed < 29) return 3;
+    return 4;
+  }
+  const phaseNames = {
+    1:'Fase 1 · Lluvia dorada',
+    2:'Fase 2 · Barrido de fuego',
+    3:'Fase 3 · Cazadores',
+    4:'Fase 4 · Caos final'
+  };
+
+  function spawnFalling(){
+    const r = 7 + Math.random()*8;
+    const speed = 185 + elapsed*12 + Math.random()*55;
+    obstacles.push({
+      x: Math.random()*(CANVAS_W-40)+20, y: -20, r,
+      vx: (Math.random()-0.5)*70, vy: speed, type:'fall'
+    });
+  }
+
+  function spawnHunter(){
+    const r = 9;
+    const fromLeft = Math.random() < 0.5;
+    obstacles.push({
+      x: fromLeft ? -20 : CANVAS_W+20,
+      y: Math.random()*CANVAS_H*0.6+20,
+      r, vx: fromLeft ? 130 : -130, vy: 0,
+      type:'hunter', turn: 0.78 + elapsed*0.015
+    });
+  }
+
+  function spawnBurst(){
+    const cx = CANVAS_W/2, cy = 40;
+    const count = 13 + Math.min(15, Math.floor(elapsed/3));
+    const speed = 155 + elapsed*5.8;
+    for(let i=0;i<count;i++){
+      const ang = (Math.PI*2/count)*i + Math.random()*0.2;
+      obstacles.push({
+        x: cx, y: cy, r:6,
+        vx: Math.cos(ang)*speed, vy: Math.sin(ang)*speed, type:'burst'
+      });
+    }
+  }
+
+  function spawnLaser(){
+    const axis = Math.random() < 0.5 ? 'h' : 'v';
+    const pos = axis === 'h' ? Math.random()*(CANVAS_H-80)+40 : Math.random()*(CANVAS_W-80)+40;
+    lasers.push({ axis, pos, warn: 0.62, life: 0.62 + 0.32, born: elapsed });
+  }
+
+  function update(dt){
+    elapsed += dt;
+
+    // player smoothing (direct-ish, slight ease for feel)
+    const kSpeed = 900;
+    if(keys['arrowleft']||keys['a']) player.targetX -= kSpeed*dt;
+    if(keys['arrowright']||keys['d']) player.targetX += kSpeed*dt;
+    if(keys['arrowup']||keys['w']) player.targetY -= kSpeed*dt;
+    if(keys['arrowdown']||keys['s']) player.targetY += kSpeed*dt;
+    clampPlayer();
+    player.x += (player.targetX - player.x) * Math.min(1, dt*22);
+    player.y += (player.targetY - player.y) * Math.min(1, dt*22);
+
+    const phase = currentPhase();
+
+    // spawn timing ramps up
+    const spawnInterval = Math.max(0.065, 0.55 - elapsed*0.017);
+    if(elapsed - lastSpawn > spawnInterval){
+      lastSpawn = elapsed;
+      if(phase === 1){
+        spawnFalling();
+        if(Math.random()<0.2) spawnFalling();
+      } else if(phase === 2){
+        spawnFalling();
+        if(Math.random()<0.55) spawnFalling();
+      } else if(phase === 3){
+        spawnFalling();
+        if(Math.random()<0.7) spawnHunter();
+        if(Math.random()<0.3) spawnFalling();
+      } else {
+        spawnFalling();
+        if(Math.random()<0.85) spawnHunter();
+        if(Math.random()<0.4) spawnHunter();
+      }
+    }
+
+    // lasers from phase 2+
+    if(phase >= 2){
+      const laserInterval = Math.max(1.2, 3.4 - elapsed*0.045);
+      if(elapsed - lastLaser > laserInterval){
+        lastLaser = elapsed;
+        spawnLaser();
+      }
+    }
+    // bursts from phase 3+, more frequent in phase 4
+    if(phase >= 3){
+      const burstInterval = phase === 4 ? 2.1 : 3.6;
+      if(elapsed - (spawnBurst._last||-99) > burstInterval){
+        spawnBurst._last = elapsed;
+        spawnBurst();
+      }
+    }
+
+    // update obstacles
+    for(const o of obstacles){
+      if(o.type === 'hunter'){
+        const dy = player.y - o.y;
+        o.vy += Math.max(-1,Math.min(1, dy*0.012)) * o.turn * 60 * dt;
+        o.vy = Math.max(-215, Math.min(215, o.vy));
+      }
+      o.x += o.vx*dt;
+      o.y += o.vy*dt;
+    }
+    obstacles = obstacles.filter(o => o.y < CANVAS_H+40 && o.y > -60 && o.x > -60 && o.x < CANVAS_W+60);
+
+    // update lasers
+    for(const l of lasers){
+      l.age = elapsed - l.born;
+    }
+    lasers = lasers.filter(l => l.age < l.life);
+
+    // collisions: obstacles
+    for(const o of obstacles){
+      const dx = o.x-player.x, dy = o.y-player.y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if(dist < o.r + player.r){
+        return true; // hit
+      }
+    }
+    // collisions: active lasers (only when past warning phase)
+    for(const l of lasers){
+      if(l.age < l.warn) continue;
+      const thickness = 10;
+      if(l.axis === 'h'){
+        if(Math.abs(player.y - l.pos) < thickness/2 + player.r) return true;
+      } else {
+        if(Math.abs(player.x - l.pos) < thickness/2 + player.r) return true;
+      }
+    }
+
+    return false;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+
+    // subtle vignette grid
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    ctx.strokeStyle = '#f0a500';
+    for(let x=0; x<CANVAS_W; x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,CANVAS_H); ctx.stroke(); }
+    for(let y=0; y<CANVAS_H; y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(CANVAS_W,y); ctx.stroke(); }
+    ctx.restore();
+
+    // lasers
+    for(const l of lasers){
+      const warning = l.age < l.warn;
+      ctx.save();
+      if(warning){
+        ctx.globalAlpha = 0.35 + 0.25*Math.sin(elapsed*30);
+        ctx.strokeStyle = '#ff4d4d';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10,8]);
+      } else {
+        ctx.globalAlpha = 0.9;
+        ctx.strokeStyle = '#ff2d2d';
+        ctx.shadowColor = '#ff4d4d';
+        ctx.shadowBlur = 18;
+        ctx.lineWidth = 10;
+      }
+      ctx.beginPath();
+      if(l.axis === 'h'){
+        ctx.moveTo(0,l.pos); ctx.lineTo(CANVAS_W,l.pos);
+      } else {
+        ctx.moveTo(l.pos,0); ctx.lineTo(l.pos,CANVAS_H);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // obstacles
+    for(const o of obstacles){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+      const grad = ctx.createRadialGradient(o.x-o.r*0.3,o.y-o.r*0.3,1,o.x,o.y,o.r);
+      if(o.type === 'hunter'){
+        grad.addColorStop(0,'#ff8a6a'); grad.addColorStop(1,'#7a1f1f');
+      } else if(o.type === 'burst'){
+        grad.addColorStop(0,'#fff3b0'); grad.addColorStop(1,'#c1272d');
+      } else {
+        grad.addColorStop(0,'#ffe89a'); grad.addColorStop(1,'#3a2400');
+      }
+      ctx.fillStyle = grad;
+      ctx.shadowColor = o.type==='fall' ? 'rgba(240,165,0,0.6)' : 'rgba(255,60,60,0.6)';
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // player (crown-ish orb)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r+4, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,210,63,0.18)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+    const pg = ctx.createRadialGradient(player.x-3,player.y-3,1,player.x,player.y,player.r);
+    pg.addColorStop(0,'#fffbe6'); pg.addColorStop(1,'#f0a500');
+    ctx.fillStyle = pg;
+    ctx.shadowColor = '#ffd23f';
+    ctx.shadowBlur = 16;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function loop(ts){
+    if(!running) return;
+    if(!lastTs) lastTs = ts;
+    let dt = (ts - lastTs)/1000;
+    dt = Math.min(dt, 0.033);
+    lastTs = ts;
+
+    const hit = update(dt);
+    draw();
+
+    const phase = currentPhase();
+    timerLabel.innerHTML = elapsed.toFixed(1) + '<small> / ' + WIN_TIME.toFixed(1) + 's</small>';
+    phaseLabel.textContent = phaseNames[phase];
+    statPhase.textContent = phase + ' / 4';
+    progressFill.style.width = Math.min(100,(elapsed/WIN_TIME)*100) + '%';
+
+    if(hit){
+      endRun(false);
+      return;
+    }
+    if(elapsed >= WIN_TIME){
+      endRun(true);
+      return;
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function startRun(){
+    reset();
+    running = true;
+    lastTs = 0;
+    startOverlay.style.display = 'none';
+    deathOverlay.style.display = 'none';
+    winOverlay.style.display = 'none';
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function endRun(won){
+    running = false;
+    cancelAnimationFrame(rafId);
+
+    attempts += 1;
+    localStorage.setItem(LS_ATTEMPTS, String(attempts));
+    if(elapsed > best){
+      best = elapsed;
+      localStorage.setItem(LS_BEST, String(best));
+    }
+    refreshStats();
+
+    if(won){
+      unlocked = true;
+      localStorage.setItem(LS_UNLOCKED, 'true');
+      winOverlay.style.display = 'flex';
+    } else {
+      deathText.textContent = 'Aguantaste ' + elapsed.toFixed(1) + ' segundos. La corona vuelve al pedestal. Otra vez.';
+      deathOverlay.style.display = 'flex';
+    }
+  }
+
+  startBtn.addEventListener('click', startRun);
+  retryBtn.addEventListener('click', startRun);
+  playAgainBtn.addEventListener('click', startRun);
+  quitBtn.addEventListener('click', ()=>{
+    deathOverlay.style.display = 'none';
+    startOverlay.style.display = 'flex';
+    reset();
+    draw();
+  });
+  winCloseBtn.addEventListener('click', ()=>{
+    winOverlay.style.display = 'none';
+    startOverlay.style.display = 'flex';
+    reset();
+    draw();
+    vault.classList.add('unlocked');
+    downloadRow.classList.add('show');
+    launchConfetti();
+    document.getElementById('vault').scrollIntoView({behavior:'smooth', block:'center'});
+  });
+
+  // initial paint
+  reset();
+  draw();
+
+  /* ---------- Confetti al ganar ---------- */
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const cctx = confettiCanvas.getContext('2d');
+  function resizeConfetti(){
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  resizeConfetti();
+  window.addEventListener('resize', resizeConfetti);
+
+  function launchConfetti(){
+    const colors = ['#ffd23f','#f0a500','#fff3b0','#ffffff','#c1272d'];
+    const pieces = [];
+    const count = 160;
+    for(let i=0;i<count;i++){
+      pieces.push({
+        x: Math.random()*confettiCanvas.width,
+        y: -20 - Math.random()*200,
+        w: 6+Math.random()*6,
+        h: 8+Math.random()*10,
+        rot: Math.random()*Math.PI*2,
+        vRot: (Math.random()-0.5)*0.2,
+        vy: 2+Math.random()*3,
+        vx: (Math.random()-0.5)*2,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        life: 0
+      });
+    }
+    let frame = 0;
+    const maxFrames = 260;
+    function step(){
+      cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+      let alive = false;
+      for(const p of pieces){
+        p.x += p.vx; p.y += p.vy; p.rot += p.vRot; p.life++;
+        if(p.y < confettiCanvas.height+30) alive = true;
+        cctx.save();
+        cctx.translate(p.x,p.y);
+        cctx.rotate(p.rot);
+        cctx.fillStyle = p.color;
+        cctx.globalAlpha = frame > maxFrames-40 ? Math.max(0,(maxFrames-frame)/40) : 1;
+        cctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        cctx.restore();
+      }
+      frame++;
+      if(alive && frame < maxFrames){
+        requestAnimationFrame(step);
+      } else {
+        cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  if(unlocked){
+    // no auto confetti on reload, just show unlocked state (already handled above)
+  }
+})();
+</script>
+</body>
+</html>
